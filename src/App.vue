@@ -6,7 +6,7 @@
           <span class="title">扫雷大战</span>
           <button>重置</button>
           <span>步数:{{clickNumber}}</span>
-          <span>计时:{{time}}</span>
+          <span>计时:{{time}}秒</span>
         </div>
         <div class="box">
           <ul>
@@ -28,11 +28,19 @@
           </ul>
         </div>
       </div>
+      <div class="rankBox">
+          <Rank />
+          <History
+          
+          />
+        </div>
     </div>
   </div>
 </template>
 
 <script>
+import Rank from '@/components/rank'
+import history from '@/components/history'
 
 export default {
   name: 'App',
@@ -42,12 +50,16 @@ export default {
       bombNumber: 80,
       bombIndex: [],
       clickNumber: 0,
-      time: '00:00',
+      time: 0,
       min: 0,
       max: 450,
       column: 30,
       row: 0
     }
+  },
+  components:{
+    'Rank':Rank,
+    'History':history
   },
   created () {
     this.init()
@@ -69,46 +81,32 @@ export default {
       // 计算该点九宫格内有多少炸弹
     },
     clickEvent (row, column) {
-      console.log('click')
       const currentPoint = this.getCurrentPoint(row, column)
       if (currentPoint.isBomb) {
         alert('失败！')
+        window.clearInterval(clock)
         return false
       }
       // 要判断是否点击过了
       if (currentPoint.isShow) return
+      this.clickNumber++
       this.aroundCircle(row, column)
-      if (this.clickNumber === 0) {
+      if (this.clickNumber === 1) {
         // 第一次点击事件  即便是炸弹也不爆炸？
-        this.clickNumber++
+        // 开始计时
+        let clock = window.setInterval(()=>{
+          this.time++
+        },1000)
       } else {
         // 当前点击对象
         // const clickTarget = e.target
-        this.clickNumber++
       }
       if (this.number.filter(item => {
         return item.aroundNumber === null
       }).length === this.bombNumber) {
+        window.clearInterval(clock)
         alert('胜利')
       }
-      // let allFlagNumber=0
-      // let allHideNumber=0
-      // this.number.forEach(item=>{
-      //   if(item.flag===true){allFlagNumber++}
-      //   if(item.show===false){allHideNumber++}
-      // })
-      // console.log(allHideNumber,allFlagNumber)
-      // if(allFlagNumber!=0||allHideNumber!=0){
-      //   console.log('执行判断')
-      //   if(allFlagNumber===allHideNumber){
-      //     const win = this.number.every(item=>{
-      //       item.flag==true&&item.show===false
-      //     })
-      //     if(win){
-      //       alert('恭喜你！胜利！')
-      //     }
-      //   }
-      // }
     },
     mouseDownEvent (row, column) {
       console.log('mouseDown')
@@ -257,7 +255,7 @@ export default {
 }
 </script>
 
-<style >
+<style scoped>
 /* 禁止选中文字 */
 *{
   -webkit-touch-callout: none;
@@ -322,5 +320,8 @@ li.isShow{
 }
 li.baseColor{
   background-color: cadetblue;
+}
+.rankBox{
+  width: 300px;
 }
 </style>
